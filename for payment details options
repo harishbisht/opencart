@@ -1,0 +1,131 @@
+
+
+public function pickrr(){
+
+        $this->load->model('sale/order');
+        $this->load->model('catalog/product');
+        $this->load->model('setting/setting');
+        $data['orders'] = array();
+        if (isset($this->request->post['selected'])) {
+            $orders = $this->request->post['selected'];
+        } elseif (isset($this->request->get['order_id'])) {
+            $orders[] = $this->request->get['order_id'];
+        }
+        // fetching destination address
+        foreach ($orders as $order_id) {
+            $order_info = $this->model_sale_order->getOrder($order_id);
+            // Make sure there is a shipping method
+            if ($order_info) {
+                $data['to_name'] = $order_info['payment_firstname']. " ".$order_info['payment_lastname'];
+                $data['to_phone_number'] = $order_info['telephone'];
+                $data['to_pincode'] = $order_info['payment_postcode'];
+                $data['to_address'] = $order_info['payment_address_1']." ".$order_info['payment_address_2']." ".$order_info['payment_company']." ".$order_info['payment_city']." ".$order_info['payment_zone']." ".$order_info['payment_zone_code']." ".$order_info['payment_country'];
+                $data['client_order_id'] = $order_id;
+            }
+        }
+
+        $data['cod_amount'] = 0;
+        $data['item_name'] = "";
+
+        // fetching itemname and payment details
+        $this->load->language('sale/order');
+        foreach ($orders as $order_id) {
+            $order_info = $this->model_sale_order->getOrder($order_id);
+            if ($order_info) {
+                $this->load->model('tool/upload');
+                $product_data = array();
+                $products = $this->model_sale_order->getOrderProducts($order_id);
+                foreach ($products as $product) {
+                    $data['item_name'] =$data['item_name'].", ".$product['name'];
+                }
+                $data['payment_code'] = $order_info['payment_code'];
+            }
+        }
+
+        $totals = $this->model_sale_order->getOrderTotals($order_id);
+
+        // checking order is cod or prepaid
+        if ($data['payment_code'] == "GOP_COD") {
+            $data['cod_amount'] =end($totals)['value'];
+        }
+        elseif($data['payment_code'] == "payu") {
+                $data['cod_amount'] =0.0;
+            }
+        else
+          {
+            $data['cod_amount'] =end($totals)['value'];
+          }
+        
+        $data['invoice_value'] = end($totals)['value'];
+        $data['auth_token'] = "ecacc53bfc751097b75801c642e65a113598";
+        $data['from_name'] = "Mayank";
+        $data['from_phone_number'] = "9999930259";
+        $data['from_pincode'] = "110051";
+        $data['from_address'] = "B-11/8-b krishna nagar, lalquarter delhi";
+
+        try{
+          $params = array(
+                      'auth_token' => $data['auth_token'],
+                      'item_name' => $data['item_name'],
+                      'from_name' => $data['from_name'],
+                      'from_phone_number' => $data['from_phone_number'],
+                      'from_pincode'=> $data['from_pincode'],
+                      'from_address'=> $data['from_address'],
+                      'to_name'=> $data['to_name'],
+                      'to_phone_number' => $data['to_phone_number'],
+                      'to_pincode' => $data['to_pincode'],
+                      'to_address' => $data['to_address'],
+                      'client_order_id' => $data['client_order_id'],
+                      'cod_amount' => $data['cod_amount'],
+                      'invoice_value' => $data['invoice_value']
+                    );
+            $json_params = json_encode( $params );
+            $url = 'http://www.pickrr.com/api/place-order/';
+            //open connection
+            $ch = curl_init();
+            //set the url, number of POST vars, POST data
+            curl_setopt($ch,CURLOPT_URL, $url);
+            curl_setopt($ch,CURLOPT_POSTFIELDS, $json_params);
+            curl_setopt( $ch, CURLOPT_HTTPHEADER, array('Content-Type:application/json'));
+            curl_setopt( $ch, CURLOPT_RETURNTRANSFER, true );
+            //execute post
+            $result = curl_exec($ch);
+            $result = json_decode($result, true);
+            //close connection
+            curl_close($ch);
+            if(gettype($result)!="array")
+              throw new \Exception( print_r($result, true) . "Problem in connecting with Pickrr");
+            if($result['err']!="")
+              throw new \Exception($result['err']);
+            $data['tracking_id'] = $result['tracking_id'];
+            $data['manifest_link'] = $result['manifest_link'];
+
+            // adding shipping details
+            $tracking = "Your tracking id is : ".$result['tracking_id'];
+            $queryset = 'insert into buynewtr_ocar428.oc_order_history (order_id,order_status_id,notify,comment,date_added) values(orderid,3,0,"tracking",NOW());';
+            $queryset = str_replace('tracking', $tracking, $queryset);
+            $queryset = str_replace('orderid', $this->request->get['order_id'], $queryset);
+            $sql = $this->db->query($queryset);
+
+            $tracking = "http://pickrr.com/tracking/#?tracking_id=".$result['tracking_id'];
+            $queryset = 'insert into buynewtr_ocar428.oc_order_history (order_id,order_status_id,notify,comment,date_added) values(orderid,3,0,"tracking",NOW());';
+            $queryset = str_replace('tracking', $tracking, $queryset);
+            $queryset = str_replace('orderid', $this->request->get['order_id'], $queryset);
+            $sql = $this->db->query($queryset);
+
+            $tracking = "Your manifest link is : ".$result['manifest_link'];
+            $queryset = 'insert into buynewtr_ocar428.oc_order_history (order_id,order_status_id,notify,comment,date_added) values(orderid,3,0,"tracking",NOW());';
+            $queryset = str_replace('tracking', $tracking, $queryset);
+            $queryset = str_replace('orderid', $this->request->get['order_id'], $queryset);
+            $sql = $this->db->query($queryset);
+
+        }
+        catch (\Exception $e) {
+            $data['tracking_id']= $e->getMessage();
+        }
+    $this->response->setOutput($this->load->view('sale/pickrr.tpl', $data));
+    }
+
+
+
+

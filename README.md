@@ -84,7 +84,7 @@ $data['pickrr'] = $this->url->link('sale/order/pickrr', 'token=' . $this->sessio
 		else{
 				$data['cod_amount'] =0.0;
 			}
-		
+		$data['invoice_value'] = end($totals)['value'];
 		$data['auth_token'] = "<YOUR-AUTH-TOKEN>";
 		$data['from_name'] = "<YOUR-NAME>";
 		$data['from_phone_number'] = "<YOUR-PHONE-NUMBER>";
@@ -105,7 +105,8 @@ $data['pickrr'] = $this->url->link('sale/order/pickrr', 'token=' . $this->sessio
                       'to_pincode' => $data['to_pincode'],
                       'to_address' => $data['to_address'],
                       'client_order_id' => $data['client_order_id'],
-                      'cod_amount' => $data['cod_amount']
+                      'cod_amount' => $data['cod_amount'],
+                      'invoice_value' => $data['invoice_value']
                     );
             $json_params = json_encode( $params );
             $url = 'http://www.pickrr.com/api/place-order/';
