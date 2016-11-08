@@ -57,11 +57,11 @@ public function pickrr(){
           }
         
         $data['invoice_value'] = end($totals)['value'];
-        $data['auth_token'] = "ecacc53bfc751097b75801c642e65a113598";
+        $data['auth_token'] = "ecacc53bfc7541097b75801c642e65a113598";
         $data['from_name'] = "Mayank";
-        $data['from_phone_number'] = "9999930259";
+        $data['from_phone_number'] = "999999999";
         $data['from_pincode'] = "110051";
-        $data['from_address'] = "B-11/8-b krishna nagar, lalquarter delhi";
+        $data['from_address'] = "test";
 
         try{
           $params = array(

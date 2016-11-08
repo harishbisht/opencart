@@ -81,6 +81,12 @@ $data['pickrr'] = $this->url->link('sale/order/pickrr', 'token=' . $this->sessio
 		if ($data['payment_code'] == "cod") {
 		    $data['cod_amount'] =end($totals)['value'];
 		}
+        elseif ($data['payment_code'] == "GOP_COD") {
+            $data['cod_amount'] =end($totals)['value'];
+        }
+        elseif($data['payment_code'] == "payu") {
+                $data['cod_amount'] =0.0;
+            }
 		else{
 				$data['cod_amount'] =0.0;
 			}
@@ -131,19 +137,19 @@ $data['pickrr'] = $this->url->link('sale/order/pickrr', 'token=' . $this->sessio
 
             // adding shipping details
 			$tracking = "Your tracking id is : ".$result['tracking_id'];
-			$queryset = 'insert into opencart.oc_order_history (order_id,order_status_id,notify,comment,date_added) values(orderid,3,0,"tracking",NOW());';
+			$queryset = 'insert into <DATABASE-NAME>.oc_order_history (order_id,order_status_id,notify,comment,date_added) values(orderid,3,0,"tracking",NOW());';
 			$queryset = str_replace('tracking', $tracking, $queryset);
 			$queryset = str_replace('orderid', $this->request->get['order_id'], $queryset);
 			$sql = $this->db->query($queryset);
 
 			$tracking = "http://pickrr.com/tracking/#?tracking_id=".$result['tracking_id'];
-			$queryset = 'insert into opencart.oc_order_history (order_id,order_status_id,notify,comment,date_added) values(orderid,3,0,"tracking",NOW());';
+			$queryset = 'insert into <DATABASE-NAME>.oc_order_history (order_id,order_status_id,notify,comment,date_added) values(orderid,3,0,"tracking",NOW());';
 			$queryset = str_replace('tracking', $tracking, $queryset);
 			$queryset = str_replace('orderid', $this->request->get['order_id'], $queryset);
 			$sql = $this->db->query($queryset);
 
 			$tracking = "Your manifest link is : ".$result['manifest_link'];
-			$queryset = 'insert into opencart.oc_order_history (order_id,order_status_id,notify,comment,date_added) values(orderid,3,0,"tracking",NOW());';
+			$queryset = 'insert into <DATABASE-NAME>.oc_order_history (order_id,order_status_id,notify,comment,date_added) values(orderid,3,0,"tracking",NOW());';
 			$queryset = str_replace('tracking', $tracking, $queryset);
 			$queryset = str_replace('orderid', $this->request->get['order_id'], $queryset);
 			$sql = $this->db->query($queryset);
@@ -156,6 +162,6 @@ $data['pickrr'] = $this->url->link('sale/order/pickrr', 'token=' . $this->sessio
 	}
 
 ```
-##### Step 7: In above code please add your auth-token, name, pincode,phone number and address, save all the changes and now go to your order and click on pickrr button for placing order in pickrr
+##### Step 7: In above code please add your auth-token, name, pincode,phone number and address and change database name, save all the changes and now go to your order and click on pickrr button for placing order in pickrr
 
 ##### Step 8: For any help please email us to harish@pickrr.com or info@pickrr.com
